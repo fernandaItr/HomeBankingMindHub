@@ -7,6 +7,7 @@ namespace HomeBankingMindHub.Models
     {
         public static void Initialize(HomeBankingContext context)
         {
+            //Clients data
             if (!context.Clients.Any())
             {
                 var clients = new Client[]
@@ -21,6 +22,7 @@ namespace HomeBankingMindHub.Models
                 context.SaveChanges();
             }
 
+            //Accounts data
             if (!context.Accounts.Any())
             {
                 var accountVictor = context.Clients.FirstOrDefault(client => client.Email == "vcoronado@gmail.com");
@@ -44,6 +46,35 @@ namespace HomeBankingMindHub.Models
                 }
             }
 
+            //Transaction data
+            if(!context.Transactions.Any())
+            {
+                var account1 = context.Accounts.FirstOrDefault(c => c.Number == "VIN001");
+                var account2 = context.Accounts.FirstOrDefault(c => c.Number == "MAN002");
+                var account3 = context.Accounts.FirstOrDefault(c => c.Number == "VEN003");
+
+                if (account1 != null && account2 != null && account3 != null)
+                {
+                    var transactions = new Transaction[]
+                    {
+                        new Transaction { AccountId = account1.Id, Amount = 1000, Date = DateTime.Now.AddHours(-5), Description = "Transferencia recibida", Type = TransactionType.CREDIT },
+                        new Transaction { AccountId = account1.Id, Amount = -2000, Date = DateTime.Now.AddHours(-6), Description = "Compra en tienda mercado libre", Type = TransactionType.DEBIT },
+                        new Transaction { AccountId = account1.Id, Amount = -3000, Date = DateTime.Now.AddHours(-7), Description = "Compra en tienda xxxx", Type = TransactionType.DEBIT },
+
+                        new Transaction { AccountId = account2.Id, Amount = -2000, Date = DateTime.Now.AddHours(-4), Description = "Compra en pedidos ya", Type = TransactionType.CREDIT },
+                        
+                        new Transaction { AccountId = account3.Id, Amount = 1000, Date = DateTime.Now.AddHours(-8), Description = "Transferencia recibida", Type = TransactionType.DEBIT },
+                        new Transaction { AccountId = account3.Id, Amount = 5000, Date = DateTime.Now.AddHours(-9), Description = "Transferencia recibida", Type = TransactionType.DEBIT },
+                    };
+                    
+                    foreach( Transaction transaction in transactions)
+                    {
+                        context.Transactions.Add(transaction);
+                    }
+
+                    context.SaveChanges();
+                }
+            }
         }
     }
 }
