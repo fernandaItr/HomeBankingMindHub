@@ -1,4 +1,6 @@
-﻿namespace HomeBankingMindHub.Models
+﻿using HomeBankingMindHub.Models;
+
+namespace HomeBankingMindHub.Dtos
 {
     public class TransactionDTO
     {
