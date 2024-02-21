@@ -23,5 +23,11 @@ namespace HomeBankingMindHub.Repositories
                 .ToList();
         }
 
+        public void Save(Account account)
+        {
+            Create(account);
+            SaveChanges();
+        }
+
     }
 }
