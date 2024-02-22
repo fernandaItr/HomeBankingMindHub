@@ -60,6 +60,8 @@ app.UseDefaultFiles();
 
 app.UseStaticFiles();
 
+app.MapRazorPages();
+
 app.UseRouting();
 
 app.UseAuthorization();

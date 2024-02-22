@@ -193,6 +193,246 @@ namespace HomeBankingMindHub.Models
                 }
 
             }
+
+            //Add Cards data
+            if (!context.Cards.Any())
+            {
+                //First client
+                var client1 = context.Clients.FirstOrDefault(client => client.Email == "vcoronado@gmail.com");
+                if(client1 != null)
+                {
+                    var cards = new Card[]
+                    {
+                        new Card
+                        {
+                            ClientId= client1.Id,
+                            CardHolder= client1.FirstName + " "+ client1.LastName,
+                            Type=CardType.DEBIT,
+                            Color=CardColor.GOLD,
+                            Number="3325-6745-7876-4445",
+                            Cvv=990,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(4),
+                        },
+                        new Card
+                        {
+                            ClientId= client1.Id,
+                            CardHolder= client1.FirstName + " "+ client1.LastName,
+                            Type=CardType.DEBIT,
+                            Color=CardColor.SILVER,
+                            Number="6852-4578-112-4445",
+                            Cvv=220,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(4),
+                        },
+                        new Card
+                        {
+                            ClientId= client1.Id,
+                            CardHolder= client1.FirstName + " "+ client1.LastName,
+                            Type=CardType.DEBIT,
+                            Color=CardColor.TITANIUM,
+                            Number="6543-3456-7876-7789",
+                            Cvv=190,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(4),
+                        },
+                        new Card {
+                            ClientId= client1.Id,
+                            CardHolder = client1.FirstName + " " + client1.LastName,
+                            Type = CardType.CREDIT,
+                            Color = CardColor.GOLD,
+                            Number = "2234-1112-552-7888",
+                            Cvv = 733,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(6),
+                        },
+                        new Card {
+                            ClientId= client1.Id,
+                            CardHolder = client1.FirstName + " " + client1.LastName,
+                            Type = CardType.CREDIT,
+                            Color = CardColor.SILVER,
+                            Number = "8765-6745-552-4456",
+                            Cvv = 325,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(2),
+                        },
+                         new Card {
+                            ClientId= client1.Id,
+                            CardHolder = client1.FirstName + " " + client1.LastName,
+                            Type = CardType.CREDIT,
+                            Color = CardColor.TITANIUM,
+                            Number = "8890-745-552-7888",
+                            Cvv = 430,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(3),
+                        },
+                    };
+                    foreach(Card card in cards )
+                    {
+                        context.Cards.Add( card );  
+                    }
+                    context.SaveChanges();
+                }
+
+                //Second client
+                var client2 = context.Clients.FirstOrDefault(client => client.Email == "marcosGG@gmail.com");
+                if (client2 != null)
+                {
+                    var cards = new Card[]
+                    {
+                        new Card
+                        {
+                            ClientId= client2.Id,
+                            CardHolder= client2.FirstName + " "+ client2.LastName,
+                            Type=CardType.DEBIT,
+                            Color=CardColor.GOLD,
+                            Number="3325-6745-7876-4569",
+                            Cvv=852,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(5),
+                        },
+                        new Card
+                        {
+                            ClientId= client2.Id,
+                            CardHolder= client2.FirstName + " "+ client2.LastName,
+                            Type=CardType.DEBIT,
+                            Color=CardColor.SILVER,
+                            Number="1125-6745-7876-4445",
+                            Cvv=990,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(3),
+                        },
+                        new Card
+                        {
+                            ClientId= client2.Id,
+                            CardHolder= client2.FirstName + " "+ client2.LastName,
+                            Type=CardType.DEBIT,
+                            Color=CardColor.TITANIUM,
+                            Number="3325-7896-7876-4445",
+                            Cvv=935,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(2),
+                        },
+                        new Card
+                        {
+                            ClientId= client2.Id,
+                            CardHolder= client2.FirstName + " "+ client2.LastName,
+                            Type=CardType.CREDIT,
+                            Color=CardColor.GOLD,
+                            Number="4586-6745-7876-6752",
+                            Cvv=951,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(5),
+                        },
+                        new Card
+                        {
+                            ClientId= client2.Id,
+                            CardHolder= client2.FirstName + " "+ client2.LastName,
+                            Type=CardType.CREDIT,
+                            Color=CardColor.SILVER,
+                            Number="3325-8523-5745-4445",
+                            Cvv=856,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(3),
+                        },
+                         new Card {
+                            ClientId= client2.Id,
+                            CardHolder = client2.FirstName + " " + client2.LastName,
+                            Type = CardType.CREDIT,
+                            Color = CardColor.TITANIUM,
+                            Number = "2589-6745-684-7888",
+                            Cvv = 568,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(6),
+                        },
+                    };
+                    foreach (Card card in cards)
+                    {
+                        context.Cards.Add(card);
+                    }
+                    context.SaveChanges();
+                }
+
+                //Third client
+                var client3 = context.Clients.FirstOrDefault(client => client.Email == "veronuñez@gmail.com");
+                if (client3 != null)
+                {
+                    var cards = new Card[]
+                    {
+                        new Card
+                        {
+                            ClientId= client3.Id,
+                            CardHolder= client3.FirstName + " "+ client3.LastName,
+                            Type=CardType.DEBIT,
+                            Color=CardColor.GOLD,
+                            Number="8669-6745-7876-4556",
+                            Cvv=962,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(5),
+                        },
+                        new Card
+                        {
+                            ClientId= client3.Id,
+                            CardHolder= client3.FirstName + " "+ client3.LastName,
+                            Type=CardType.DEBIT,
+                            Color=CardColor.SILVER,
+                            Number="1125-5538-7876-4445",
+                            Cvv=980,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(3),
+                        },
+                        new Card
+                        {
+                            ClientId= client3.Id,
+                            CardHolder= client3.FirstName + " "+ client3.LastName,
+                            Type=CardType.DEBIT,
+                            Color=CardColor.TITANIUM,
+                            Number="1123-8562-786-4445",
+                            Cvv=125,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(2),
+                        },
+                        new Card
+                        {
+                            ClientId= client3.Id,
+                            CardHolder= client3.FirstName + " "+ client3.LastName,
+                            Type=CardType.CREDIT,
+                            Color=CardColor.GOLD,
+                            Number="6897-6745-542-6752",
+                            Cvv=951,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(5),
+                        },
+                        new Card
+                        {
+                            ClientId= client3.Id,
+                            CardHolder= client3.FirstName + " "+ client3.LastName,
+                            Type=CardType.CREDIT,
+                            Color=CardColor.SILVER,
+                            Number="3256-7456-5745-1123",
+                            Cvv=874,
+                            FromDate= DateTime.Now,
+                            ThruDate=DateTime.Now.AddYears(6),
+                        },
+                         new Card {
+                            ClientId= client3.Id,
+                            CardHolder = client3.FirstName + " " + client3.LastName,
+                            Type = CardType.CREDIT,
+                            Color = CardColor.TITANIUM,
+                            Number = "1234-6745-865-7888",
+                            Cvv = 118,
+                            FromDate= DateTime.Now,
+                            ThruDate= DateTime.Now.AddYears(6),
+                        },
+                    };
+                    foreach (Card card in cards)
+                    {
+                        context.Cards.Add(card);
+                    }
+                    context.SaveChanges();
+                }
+            }
+
         }
     }
 }
