@@ -1,8 +1,10 @@
 ﻿using HomeBankingMindHub.Dtos;
 using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace HomeBankingMindHub.Controllers
 {
@@ -55,15 +57,24 @@ namespace HomeBankingMindHub.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = "ClientOnly")]
         public IActionResult Get(long id)
         {
             try
             {
-                var account = _accountRepository.FindById(id);
-                if(account == null)
+                string email = User.FindFirst("Client").Value != null ? User.FindFirst("Client").Value : string.Empty;
+
+                if (email == string.Empty)
                 {
                     return Forbid();
                 }
+
+                var account = _accountRepository.FindByIdAndClientEmail(id, email);
+
+                if(account == null)
+                {
+                    return Forbid();
+                }            
 
                 var accountDTO = new AccountDTO
                 {
