@@ -202,6 +202,7 @@ namespace HomeBankingMindHub.Controllers
             }
         }
 
+        //Crear cliente con una cuenta asociada
         [HttpPost]
         public IActionResult Post([FromBody] Client client)
         {
@@ -235,7 +236,27 @@ namespace HomeBankingMindHub.Controllers
                 };
 
                 _clientRepository.Save(newClient);
-                return Created("", newClient);
+
+                //creamos num de cuenta y buscamos si el numero de cuenta ya existe     
+                string accountNumber;
+                do
+                {
+                    var random = RandomNumbers.GenerateRandomInt(0, 99999999);
+
+                    accountNumber = "VIN-" + random.ToString();
+
+                } while (_accountRepository.ExistsByNumber(accountNumber));
+
+                Account newAccount = new Account
+                {
+                    Number = accountNumber,
+                    CreationDate = DateTime.Now,
+                    Balance = 0,
+                    ClientId = newClient.Id,
+                };
+
+                _accountRepository.Save(newAccount);
+                return Created("", "Cliente y cuenta creado con exito");
             }
             catch (Exception ex)
             {
@@ -315,7 +336,6 @@ namespace HomeBankingMindHub.Controllers
                 string accountNumber;
                 do
                 {
-                    //var random = RandomNumberGenerator.GetInt32(0, 99999999);
                     var random = RandomNumbers.GenerateRandomInt(0, 99999999);
 
                     accountNumber = "VIN-" + random.ToString();
