@@ -435,8 +435,11 @@ namespace HomeBankingMindHub.Controllers
                 string cardNumber;
                 do
                 {
-                    var random = RandomNumbers.GenerateRandomLong(1111111111111111, 9999999999999999);
-                    cardNumber = random.ToString();
+                    var random1 = RandomNumbers.GenerateRandomLong(1111, 9999);
+                    var random2 = RandomNumbers.GenerateRandomLong(1111, 9999);
+                    var random3 = RandomNumbers.GenerateRandomLong(1111, 9999);
+                    var random4 = RandomNumbers.GenerateRandomLong(1111, 9999);
+                    cardNumber = (random1 + "-" + random2 + "-" + random3 + "-"+ random4).ToString();
 
                 } while (_cardRepository.ExistsByNumber(cardNumber));
 
