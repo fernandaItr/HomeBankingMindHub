@@ -116,8 +116,6 @@ namespace HomeBankingMindHub.Controllers
 
                     if(account == null) { return Forbid(); }
 
-                    //if(!client.Accounts.Contains(account)) { return Forbid(); }
-                    //if (account.Number.IsNullOrEmpty()) { return Forbid(); }
                     if(account.ClientId != client.Id) { return Forbid(); }
 
                     //Crear solicitud de prestamo
