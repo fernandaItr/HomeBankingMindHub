@@ -30,7 +30,7 @@ namespace HomeBankingMindHub.Controllers
             try
             {
                 //Parametros no vacios
-                if (transfer.Amount == 0 || string.IsNullOrEmpty(transfer.Description) || string.IsNullOrEmpty(transfer.FromAccountNumber) || string.IsNullOrEmpty(transfer.ToAccountNumber)) { 
+                if (transfer.Amount < 1 || string.IsNullOrEmpty(transfer.Description) || string.IsNullOrEmpty(transfer.FromAccountNumber) || string.IsNullOrEmpty(transfer.ToAccountNumber)) { 
                     return StatusCode(403, "Campos vacios");
                 }
 
