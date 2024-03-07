@@ -81,24 +81,16 @@ namespace HomeBankingMindHub.Controllers
                     }
 
                     //Verificar cuotas
-                    bool flag = false;
                     string[] paymentValues = loan.Payments.Split(',');
 
-                    foreach (string paymentValue in paymentValues)
-                    {
-                        if (paymentValue == loanApplicationDTO.Payments)
-                        {
-                            flag = true;
-                            break;
-                        }
-                    }
+                    string paymentValue = paymentValues.FirstOrDefault(value => value == loanApplicationDTO.Payments);
 
-                    if (!flag) { return Forbid(); }
+                    if(paymentValue.IsNullOrEmpty()) { return  Forbid(); }
 
                     //Verificar que el monto solicitado no exceda el monto maximo del prestamo
                     if (loanApplicationDTO.Amount > loan.MaxAmount) { return Forbid(); };
 
-                    //Verificar que la cuenta destino pertenezca al cliente autenticado
+                    //Obtener cliente autenticado
                     string email = User.FindFirst("Client") != null ? User.FindFirst("Client").Value : string.Empty;
                     if (email == string.Empty)
                     {
@@ -112,6 +104,7 @@ namespace HomeBankingMindHub.Controllers
                         return Forbid();
                     }
 
+                    //Cuentas
                     Account account = _accountRepository.FindByNumber(loanApplicationDTO.AccountNumber);
 
                     if(account == null) { return Forbid(); }

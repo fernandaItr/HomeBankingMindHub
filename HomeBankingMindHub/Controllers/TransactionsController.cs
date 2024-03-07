@@ -56,18 +56,8 @@ namespace HomeBankingMindHub.Controllers
                 }
                 Client currentClient = _clientRepository.FindByEmail(email);
 
-                bool flag = false;
-                foreach(Account account in currentClient.Accounts)
-                {
-                    if(account.Number == transfer.FromAccountNumber)
-                    {                        
-                        flag = true;
-                    }
-                }
-                if(!flag)
-                {
-                    return StatusCode(403, "Cuenta distinta a usuario autenticado.");
-                }
+                var account = currentClient.Accounts.FirstOrDefault(value => value.Number == transfer.FromAccountNumber);
+                if (account == null) { return Forbid(); }
 
                 //Verificar que la cuenta origen tenga el monto disponible
                 if (accountFrom.Balance < transfer.Amount)
