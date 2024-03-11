@@ -10,6 +10,7 @@ using System.Linq;
 using HomeBankingMindHub.Utils;
 using System.Security.Principal;
 using HomeBankingMindHub.Services;
+using System.Transactions;
 
 namespace HomeBankingMindHub.Controllers
 {
@@ -97,62 +98,67 @@ namespace HomeBankingMindHub.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] Client client)
         {
-            try
+            using (var scope = new TransactionScope())
             {
-                //validamos datos antes
-                if (String.IsNullOrEmpty(client.Email))
-                    return StatusCode(403, "Email invalido");
-
-                if (String.IsNullOrEmpty(client.Password))
-                    return StatusCode(403, "Contraseña invalida");
-
-                if (String.IsNullOrEmpty(client.FirstName))
-                    return StatusCode(403, "Nombre invalido");
-
-                if (String.IsNullOrEmpty(client.LastName))
-                    return StatusCode(403, "Apellido invalido");
-
-                //buscamos si el usuario ya existe
-                if(_clientService.ExistsByEmail(client.Email))
+                try
                 {
-                    return StatusCode(403, "Email esta en uso");
+                    //validamos datos antes
+                    if (String.IsNullOrEmpty(client.Email))
+                        return StatusCode(403, "Email invalido");
+
+                    if (String.IsNullOrEmpty(client.Password))
+                        return StatusCode(403, "Contraseña invalida");
+
+                    if (String.IsNullOrEmpty(client.FirstName))
+                        return StatusCode(403, "Nombre invalido");
+
+                    if (String.IsNullOrEmpty(client.LastName))
+                        return StatusCode(403, "Apellido invalido");
+
+                    //buscamos si el usuario ya existe
+                    if (_clientService.ExistsByEmail(client.Email))
+                    {
+                        return StatusCode(403, "Email esta en uso");
+                    }
+
+                    Client newClient = new Client
+                    {
+                        Email = client.Email,
+                        Password = client.Password,
+                        FirstName = client.FirstName,
+                        LastName = client.LastName,
+                    };
+
+                    _clientService.Save(newClient);
+
+                    //creamos num de cuenta y buscamos si el numero de cuenta ya existe     
+                    string accountNumber;
+                    do
+                    {
+                        var random = RandomNumbers.GenerateRandomInt(0, 99999999);
+
+                        accountNumber = "VIN-" + random.ToString();
+
+                    } while (_accountService.ExistsByNumber(accountNumber));
+
+                    Account newAccount = new Account
+                    {
+                        Number = accountNumber,
+                        CreationDate = DateTime.Now,
+                        Balance = 0,
+                        ClientId = newClient.Id,
+                    };
+
+                    _accountService.Save(newAccount);
+
+                    scope.Complete();
+                    return Created("", "Cliente y cuenta creado con exito");
                 }
-
-                Client newClient = new Client
+                catch (Exception ex)
                 {
-                    Email = client.Email,
-                    Password = client.Password,
-                    FirstName = client.FirstName,
-                    LastName = client.LastName,
-                };
-
-                _clientService.Save(newClient);
-
-                //creamos num de cuenta y buscamos si el numero de cuenta ya existe     
-                string accountNumber;
-                do
-                {
-                    var random = RandomNumbers.GenerateRandomInt(0, 99999999);
-
-                    accountNumber = "VIN-" + random.ToString();
-
-                } while (_accountService.ExistsByNumber(accountNumber));
-
-                Account newAccount = new Account
-                {
-                    Number = accountNumber,
-                    CreationDate = DateTime.Now,
-                    Balance = 0,
-                    ClientId = newClient.Id,
-                };
-
-                _accountService.Save(newAccount);
-                return Created("", "Cliente y cuenta creado con exito");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
+                    return StatusCode(500, ex.Message);
+                }
+            }            
         }
 
         //GET accounts
