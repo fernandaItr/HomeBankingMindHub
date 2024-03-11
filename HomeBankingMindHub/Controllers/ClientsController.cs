@@ -1,7 +1,6 @@
 ﻿//using HomeBankingMindHub.dtos;
 using HomeBankingMindHub.Dtos;
 using HomeBankingMindHub.Models;
-using HomeBankingMindHub.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HomeBankingMindHub.Utils;
 using System.Security.Principal;
+using HomeBankingMindHub.Services;
 
 namespace HomeBankingMindHub.Controllers
 {
@@ -17,15 +17,15 @@ namespace HomeBankingMindHub.Controllers
     [ApiController]
     public class ClientsController : ControllerBase
     {
-        private IClientRepository _clientRepository;
-        private IAccountRepository _accountRepository;
-        private ICardRepository _cardRepository;
+        private IClientService _clientService;
+        private IAccountService _accountService;
+        private ICardService _cardService;
 
-        public ClientsController(IClientRepository clientRepository, IAccountRepository accountRepository, ICardRepository cardRepository)
+        public ClientsController(IClientService clientService, IAccountService accountService, ICardService cardService)
         {
-            _clientRepository = clientRepository;
-            _accountRepository = accountRepository;
-            _cardRepository = cardRepository;
+            _clientService = clientService;
+            _accountService = accountService;
+            _cardService = cardService;
         }
 
         [HttpGet]
@@ -34,45 +34,13 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                var clients = _clientRepository.GetAllClients();
+                var clients = _clientService.GetAllClients();
 
                 var clientsDTO = new List<ClientDTO>();
 
                 foreach (Client client in clients)
                 {
-                    var newClientDTO = new ClientDTO
-                    {
-                        Id = client.Id,
-                        Email = client.Email,
-                        FirstName = client.FirstName,
-                        LastName = client.LastName,
-                        Accounts = client.Accounts.Select(ac => new AccountDTO
-                        {
-                            Id = ac.Id,
-                            Balance = ac.Balance,
-                            CreationDate = ac.CreationDate,
-                            Number = ac.Number,
-                        }).ToList(),
-                        Loans = client.ClientLoans.Select(cl => new ClientLoanDTO
-                        {
-                            Id = cl.Id,
-                            LoanId = cl.LoanId,
-                            Name = cl.Loan.Name,
-                            Amount = cl.Amount,
-                            Payments = int.Parse(cl.Payments)
-                        }).ToList(),
-                        Cards = client.Cards.Select(c => new CardDto
-                        {
-                            Id = c.Id,
-                            CardHolder = c.CardHolder,
-                            Color = c.Color.ToString(),
-                            Cvv = c.Cvv,
-                            FromDate = c.FromDate,
-                            Number = c.Number,
-                            ThruDate = c.ThruDate,
-                            Type = c.Type.ToString()
-                        }).ToList()
-                    };
+                    ClientDTO newClientDTO = new ClientDTO(client);
 
                     clientsDTO.Add(newClientDTO);
                 }
@@ -87,52 +55,14 @@ namespace HomeBankingMindHub.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "ClientOnly")]
         public IActionResult Get(long id)
         {
             try
             {
-                var client = _clientRepository.FindById(id);
-                if (client == null)
-                {
-                    return Forbid();
-                }
+                ClientDTO client = _clientService.FindClientDTOById(id);         
 
-                var clientDTO = new ClientDTO
-                {
-                    Id = client.Id,
-                    Email = client.Email,
-                    FirstName = client.FirstName,
-                    LastName = client.LastName,
-                    Accounts = client.Accounts.Select(ac => new AccountDTO
-                    {
-                        Id = ac.Id,
-                        Balance = ac.Balance,
-                        CreationDate = ac.CreationDate,
-                        Number = ac.Number,
-                    }).ToList(),
-                    Loans = client.ClientLoans.Select(cl => new ClientLoanDTO
-                    {
-                        Id = cl.Id,
-                        LoanId = cl.LoanId,
-                        Name = cl.Loan.Name,
-                        Amount = cl.Amount,
-                        Payments = int.Parse(cl.Payments)
-                    }).ToList(),
-                    Cards = client.Cards.Select(c => new CardDto
-                    {
-                        Id = c.Id,
-                        CardHolder = c.CardHolder,
-                        Color = c.Color.ToString(),
-                        Cvv = c.Cvv,
-                        FromDate = c.FromDate,
-                        Number = c.Number,
-                        ThruDate = c.ThruDate,
-                        Type = c.Type.ToString(),
-                    }).ToList()
-                };
-
-                return Ok(clientDTO);
+                return Ok(client);
             }
 
             catch (Exception ex)
@@ -153,48 +83,9 @@ namespace HomeBankingMindHub.Controllers
                     return Forbid();
                 }
 
-                Client client = _clientRepository.FindByEmail(email);
+                ClientDTO client = _clientService.getClientDTOByEmail(email);
 
-                if (client == null)
-                {
-                    return Forbid();
-                }
-
-                var clientDTO = new ClientDTO
-                {
-                    Id = client.Id,
-                    Email = client.Email,
-                    FirstName = client.FirstName,
-                    LastName = client.LastName,
-                    Accounts = client.Accounts.Select(ac => new AccountDTO
-                    {
-                        Id = ac.Id,
-                        Balance = ac.Balance,
-                        CreationDate = ac.CreationDate,
-                        Number = ac.Number,
-                    }).ToList(),
-                    Loans = client.ClientLoans.Select(cl => new ClientLoanDTO
-                    {
-                        Id = cl.Id,
-                        LoanId = cl.LoanId,
-                        Name = cl.Loan.Name,
-                        Amount = cl.Amount,
-                        Payments = int.Parse(cl.Payments)
-                    }).ToList(),
-                    Cards = client.Cards.Select(c => new CardDto
-                    {
-                        Id = c.Id,
-                        CardHolder = c.CardHolder,
-                        Color = c.Color.ToString(),
-                        Cvv = c.Cvv,
-                        FromDate = c.FromDate,
-                        Number = c.Number,
-                        ThruDate = c.ThruDate,
-                        Type = c.Type.ToString()
-                    }).ToList()
-                };
-
-                return Ok(clientDTO);
+                return Ok(client);
             }
             catch (Exception ex)
             {
@@ -222,7 +113,7 @@ namespace HomeBankingMindHub.Controllers
                     return StatusCode(403, "Apellido invalido");
 
                 //buscamos si el usuario ya existe
-                if (_clientRepository.ExistsByEmail(client.Email))
+                if(_clientService.ExistsByEmail(client.Email))
                 {
                     return StatusCode(403, "Email esta en uso");
                 }
@@ -235,7 +126,7 @@ namespace HomeBankingMindHub.Controllers
                     LastName = client.LastName,
                 };
 
-                _clientRepository.Save(newClient);
+                _clientService.Save(newClient);
 
                 //creamos num de cuenta y buscamos si el numero de cuenta ya existe     
                 string accountNumber;
@@ -245,7 +136,7 @@ namespace HomeBankingMindHub.Controllers
 
                     accountNumber = "VIN-" + random.ToString();
 
-                } while (_accountRepository.ExistsByNumber(accountNumber));
+                } while (_accountService.ExistsByNumber(accountNumber));
 
                 Account newAccount = new Account
                 {
@@ -255,7 +146,7 @@ namespace HomeBankingMindHub.Controllers
                     ClientId = newClient.Id,
                 };
 
-                _accountRepository.Save(newAccount);
+                _accountService.Save(newAccount);
                 return Created("", "Cliente y cuenta creado con exito");
             }
             catch (Exception ex)
@@ -276,7 +167,7 @@ namespace HomeBankingMindHub.Controllers
                 {
                     return Forbid();
                 }
-                Client client = _clientRepository.FindByEmail(email);
+                Client client = _clientService.getClientByEmail(email);
 
                 var accountslist = client.Accounts.ToList();
 
@@ -317,12 +208,7 @@ namespace HomeBankingMindHub.Controllers
                     return Forbid();
                 }
 
-                Client client = _clientRepository.FindByEmail(email);
-
-                if (client == null)
-                {
-                    return Forbid();
-                }
+                Client client = _clientService.getClientByEmail(email);
 
                 //validamos datos antes
 
@@ -340,7 +226,7 @@ namespace HomeBankingMindHub.Controllers
 
                     accountNumber = "VIN-" + random.ToString();
 
-                } while (_accountRepository.ExistsByNumber(accountNumber));
+                } while (_accountService.ExistsByNumber(accountNumber));
 
                 Account newAccount = new Account
                 {
@@ -350,7 +236,7 @@ namespace HomeBankingMindHub.Controllers
                     ClientId = client.Id,
                 };
 
-                _accountRepository.Save(newAccount);
+                _accountService.Save(newAccount);
                 return StatusCode(201, "Creada");
 
             }
@@ -372,7 +258,7 @@ namespace HomeBankingMindHub.Controllers
                 {
                     return Forbid();
                 }
-                Client client = _clientRepository.FindByEmail(email);
+                Client client = _clientService.getClientByEmail(email);
 
                 var cardslist = client.Cards.ToList();
 
@@ -380,17 +266,7 @@ namespace HomeBankingMindHub.Controllers
 
                 foreach (Card card in cardslist)
                 {
-                    var newCardDTO = new CardDto
-                    {                        
-                            Id = card.Id,
-                            CardHolder = card.CardHolder,
-                            Color = card.Color.ToString(),
-                            Cvv = card.Cvv,
-                            FromDate = card.FromDate,
-                            Number = card.Number,
-                            ThruDate = card.ThruDate,
-                            Type = card.Type.ToString()
-                    };
+                    CardDto newCardDTO = new CardDto(card);
 
                     cardsDTO.Add(newCardDTO);
                 }
@@ -417,11 +293,7 @@ namespace HomeBankingMindHub.Controllers
                     return Forbid();
                 }
 
-                Client client = _clientRepository.FindByEmail(email);
-                if (client == null)
-                {
-                    return Forbid();
-                }
+                Client client = _clientService.getClientByEmail(email);
 
                 foreach(var card in client.Cards)
                 {
@@ -439,9 +311,9 @@ namespace HomeBankingMindHub.Controllers
                     var random2 = RandomNumbers.GenerateRandomLong(1000, 9999);
                     var random3 = RandomNumbers.GenerateRandomLong(1000, 9999);
                     var random4 = RandomNumbers.GenerateRandomLong(1000, 9999);
-                    cardNumber = (random1 + "-" + random2 + "-" + random3 + "-"+ random4).ToString();
+                    cardNumber = (random1 + "-" + random2 + "-" + random3 + "-" + random4).ToString();
 
-                } while (_cardRepository.ExistsByNumber(cardNumber));
+                } while (_cardService.ExistsByNumber(cardNumber));
 
                 //Generar cvv
                 var randomCvv = RandomNumbers.GenerateRandomInt(0, 999);
@@ -458,7 +330,7 @@ namespace HomeBankingMindHub.Controllers
                         ClientId = client.Id
                 };
 
-                    _cardRepository.Save(newCard);
+                    _cardService.Save(newCard);
                     return StatusCode(201, newCard);
             }
             catch(Exception ex) 

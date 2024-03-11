@@ -1,4 +1,6 @@
-﻿namespace HomeBankingMindHub.Dtos
+﻿using HomeBankingMindHub.Models;
+
+namespace HomeBankingMindHub.Dtos
 {
     public class ClientLoanDTO
     {
@@ -7,6 +9,16 @@
         public string Name { get; set; }
         public double Amount { get; set; }
         public int Payments { get; set; }
+
+        public ClientLoanDTO() { }
+        public ClientLoanDTO(ClientLoan clientLoan)
+        {
+            Id = clientLoan.Id;
+            LoanId = clientLoan.LoanId;
+            Name = clientLoan.Loan.Name;
+            Amount = clientLoan.Amount;
+            Payments = int.Parse(clientLoan.Payments);
+        }
 
     }
 }

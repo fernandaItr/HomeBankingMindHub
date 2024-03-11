@@ -1,6 +1,7 @@
 ﻿using HomeBankingMindHub.Dtos;
 using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories;
+using HomeBankingMindHub.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
@@ -13,28 +14,29 @@ namespace HomeBankingMindHub.Controllers
     [ApiController]
     public class LoansController : ControllerBase
     {
-        private IClientRepository _clientRepository;
-        private IAccountRepository _accountRepository;
-        private ILoanRepository _loanRepository;
-        private IClientLoanRepository _clientLoanRepository;
-        private ITransactionRepository _transactionRepository;
+        private IClientService _clientService;
+        private IAccountService _accountService;
+        private ILoanService _loanService;
+        private IClientLoanService _clientLoanService;
+        private ITransactionService _transactionService;
 
-        public LoansController(IClientRepository clientRepository, IAccountRepository accountRepository, ILoanRepository loanRepository, IClientLoanRepository clientLoanRepository, ITransactionRepository transactionRepository)
+        public LoansController(IClientService clientService, IAccountService accountService, ILoanService loanService, IClientLoanService clientLoanService, ITransactionService transactionService)
         {
-            _clientRepository = clientRepository;
-            _accountRepository = accountRepository;
-            _loanRepository = loanRepository;
-            _clientLoanRepository = clientLoanRepository;
-            _transactionRepository = transactionRepository;
+            _clientService = clientService;
+            _accountService = accountService;
+            _loanService = loanService;
+            _clientLoanService = clientLoanService;
+            _transactionService = transactionService;
         }
 
         [HttpGet]
-        //[Authorize(Policy = "AdminOnly")]
+        [Authorize(Policy = "ClientOnly")]
         public IActionResult Get()
         {
             try
             {
-                var loans = _loanRepository.GetAll();
+                var loans = _loanService.GetAll();
+                
                 var loansDTO = new List<LoanDTO>();
 
                 foreach(Loan loan in loans)
@@ -68,11 +70,7 @@ namespace HomeBankingMindHub.Controllers
                 try
                 {
                     //Obtener el prestamo a pedir y verificar que el prestamo exista
-                    var loan = _loanRepository.FindById(loanApplicationDTO.LoanId);
-                    if (loan == null)
-                    {
-                        return Forbid();
-                    }
+                    Loan loan = _loanService.FindById(loanApplicationDTO.LoanId);
 
                     //Verificar que los datos no esten vacios y monto 
                     if (loanApplicationDTO.Amount < 1 || loanApplicationDTO.Payments.IsNullOrEmpty() || loanApplicationDTO.AccountNumber.IsNullOrEmpty())
@@ -97,17 +95,10 @@ namespace HomeBankingMindHub.Controllers
                         return Forbid();
                     }
 
-                    Client client = _clientRepository.FindByEmail(email);
-
-                    if (client == null)
-                    {
-                        return Forbid();
-                    }
+                    Client client = _clientService.getClientByEmail(email);
 
                     //Cuentas
-                    Account account = _accountRepository.FindByNumber(loanApplicationDTO.AccountNumber);
-
-                    if(account == null) { return Forbid(); }
+                    Account account = _accountService.FindByNumber(loanApplicationDTO.AccountNumber);
 
                     if(account.ClientId != client.Id) { return Forbid(); }
 
@@ -120,7 +111,7 @@ namespace HomeBankingMindHub.Controllers
                         LoanId = loanApplicationDTO.LoanId,
                     };
 
-                    _clientLoanRepository.Save(newClientLoan);
+                    _clientLoanService.Save(newClientLoan);
 
                     //Crear una transaccion asociada a la cuenta destino
 
@@ -133,12 +124,12 @@ namespace HomeBankingMindHub.Controllers
                         AccountId = account.Id,
                     };
 
-                    _transactionRepository.Save(transaction);
+                    _transactionService.Save(transaction);
 
                     //Actualizar cuenta destino sumando el monton solicitado
 
                     account.Balance += loanApplicationDTO.Amount;
-                    _accountRepository.Save(account);
+                    _accountService.Save(account);
 
                     scope.Complete();
                     return StatusCode(201, "Exito");

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Dtos;
+using HomeBankingMindHub.Services;
 
 namespace HomeBankingMindHub.Controllers
 {
@@ -11,15 +12,15 @@ namespace HomeBankingMindHub.Controllers
     [ApiController]
     public class TransactionsController : ControllerBase
     {
-        private IAccountRepository _accountRepository;
-        private IClientRepository _clientRepository;
-        private ITransactionRepository _transactionRepository;
+        private IAccountService _accountService;
+        private IClientService _clientService;
+        private ITransactionService _transactionService;
 
-        public TransactionsController(IAccountRepository accountRepository, IClientRepository clientRepository, ITransactionRepository transactionRepository)
+        public TransactionsController(IAccountService accountService, IClientService clientService, ITransactionService transactionService)
         {
-            _accountRepository = accountRepository;
-            _clientRepository = clientRepository;
-            _transactionRepository = transactionRepository;
+            _accountService = accountService;
+            _clientService = clientService;
+            _transactionService = transactionService;
         }
 
         //Crear transaccion
@@ -41,8 +42,8 @@ namespace HomeBankingMindHub.Controllers
                 }
 
                 //Verificar que cuenta origen y destino exista
-                var accountFrom = _accountRepository.FindByNumber(transfer.FromAccountNumber);
-                var accountTo = _accountRepository.FindByNumber(transfer.ToAccountNumber);
+                var accountFrom = _accountService.FindByNumber(transfer.FromAccountNumber);
+                var accountTo = _accountService.FindByNumber(transfer.ToAccountNumber);
                 if (accountFrom == null || accountTo == null)
                 {
                     return StatusCode(403, "Cuenta origen y/o destino inexistente.");
@@ -54,7 +55,7 @@ namespace HomeBankingMindHub.Controllers
                 {
                     return Forbid();
                 }
-                Client currentClient = _clientRepository.FindByEmail(email);
+                Client currentClient = _clientService.getClientByEmail(email);
 
                 var account = currentClient.Accounts.FirstOrDefault(value => value.Number == transfer.FromAccountNumber);
                 if (account == null) { return Forbid(); }
@@ -84,15 +85,15 @@ namespace HomeBankingMindHub.Controllers
                     AccountId = accountTo.Id,
                 };
                 
-                _transactionRepository.Save(TransactionDTOFrom);
-                _transactionRepository.Save(TransactionDTOTo);
+                _transactionService.Save(TransactionDTOFrom);
+                _transactionService.Save(TransactionDTOTo);
 
                 //Actualizacion de cuentas
                 accountFrom.Balance -= transfer.Amount;
                 accountTo.Balance += transfer.Amount;
 
-                _accountRepository.Save(accountFrom);
-                _accountRepository.Save(accountTo);
+                _accountService.Save(accountFrom);
+                _accountService.Save(accountTo);
 
                 return StatusCode(201, "exito");
             }

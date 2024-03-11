@@ -1,6 +1,7 @@
 ﻿using HomeBankingMindHub.Dtos;
 using HomeBankingMindHub.Models;
 using HomeBankingMindHub.Repositories;
+using HomeBankingMindHub.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,11 +13,11 @@ namespace HomeBankingMindHub.Controllers
     [ApiController]
     public class AccountsController : ControllerBase
     {
-        private IAccountRepository _accountRepository;
+        private IAccountService _accountService;
 
-        public AccountsController(IAccountRepository accountRepository)
+        public AccountsController(IAccountService accountService)
         {
-            _accountRepository = accountRepository;
+            _accountService = accountService;
         }
 
         [HttpGet]
@@ -25,7 +26,7 @@ namespace HomeBankingMindHub.Controllers
         {
             try
             {
-                var accounts = _accountRepository.GetAllAccounts();
+                var accounts = _accountService.GetAllAccounts();
                 var accountsDTO = new List<AccountDTO>();
 
                 foreach(Account account in accounts)
@@ -69,12 +70,7 @@ namespace HomeBankingMindHub.Controllers
                     return Forbid();
                 }
 
-                var account = _accountRepository.FindByIdAndClientEmail(id, email);
-
-                if(account == null)
-                {
-                    return Forbid();
-                }            
+                var account = _accountService.FindByIdAndClientEmail(id, email);
 
                 var accountDTO = new AccountDTO
                 {
