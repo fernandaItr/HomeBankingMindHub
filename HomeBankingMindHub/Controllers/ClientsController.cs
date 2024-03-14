@@ -98,8 +98,6 @@ namespace HomeBankingMindHub.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] Client client)
         {
-            using (var scope = new TransactionScope())
-            {
                 try
                 {
                     //validamos datos antes
@@ -151,14 +149,14 @@ namespace HomeBankingMindHub.Controllers
 
                     _accountService.Save(newAccount);
 
-                    scope.Complete();
-                    return Created("", "Cliente y cuenta creado con exito");
+                    //return Created("", "Cliente y cuenta creado con exito");
+                    return StatusCode(201, "Exito");
                 }
                 catch (Exception ex)
                 {
                     return StatusCode(500, ex.Message);
                 }
-            }            
+            
         }
 
         //GET accounts
@@ -300,14 +298,10 @@ namespace HomeBankingMindHub.Controllers
                 }
 
                 Client client = _clientService.getClientByEmail(email);
-
-                foreach(var card in client.Cards)
-                {
-                    if(card.Type.ToString() == cardPreferenceDTO.Type && card.Color.ToString() == cardPreferenceDTO.Color)
-                    {
-                        return StatusCode(403, "Prohibido, limite de tarjetas");
-                    }
-                }
+                
+                //Verificar que no exista color y tipo de esa tarjeta 
+                Card card = client.Cards.FirstOrDefault(c => c.Type.ToString() == cardPreferenceDTO.Type && c.Color.ToString() == cardPreferenceDTO.Color);
+                if( card != null) { return StatusCode(403, "Prohibido, limite de tarjetas"); }
 
                 //Generar numero de tarjeta
                 string cardNumber;

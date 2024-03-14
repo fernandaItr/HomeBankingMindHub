@@ -29,8 +29,8 @@ namespace HomeBankingMindHub.Controllers
         [Authorize(Policy = "ClientOnly")]
         public IActionResult Post(TransferDTO transfer)
         {
-            using (var scope = new TransactionScope())
-            {
+            //using (var scope = new TransactionScope())
+            //{
                 try
                 {
                     //Parametros no vacios
@@ -79,6 +79,7 @@ namespace HomeBankingMindHub.Controllers
                         Description = transfer.Description + " " + transfer.FromAccountNumber,
                         Date = DateTime.Now,
                         AccountId = accountFrom.Id,
+                        //Account = accountFrom
                     };
                     var TransactionDTOTo = new Models.Transaction
                     {
@@ -87,6 +88,7 @@ namespace HomeBankingMindHub.Controllers
                         Description = transfer.Description + " " + transfer.ToAccountNumber,
                         Date = DateTime.Now,
                         AccountId = accountTo.Id,
+                        //Account = accountTo
                     };
 
                     _transactionService.Save(TransactionDTOFrom);
@@ -99,14 +101,14 @@ namespace HomeBankingMindHub.Controllers
                     _accountService.Save(accountFrom);
                     _accountService.Save(accountTo);
 
-                    scope.Complete();
+                    //scope.Complete();
                     return StatusCode(201, "exito");
                 }
                 catch (Exception ex)
                 {
                     return StatusCode(500, ex.Message);
                 }
-            }
+            //}
         }
     }
 }
